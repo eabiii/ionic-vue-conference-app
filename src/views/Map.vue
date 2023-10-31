@@ -1,154 +1,167 @@
 <template>
   <ion-page>
-    <ion-header>
-      <ion-toolbar>
-        <ion-buttons slot="start">
-          <ion-menu-button></ion-menu-button>
-        </ion-buttons>
-        <ion-title>Map</ion-title>
-      </ion-toolbar>
-    </ion-header>
+    <ion-header translucent="true">
+        <ion-toolbar>
+          <ion-title>Maps</ion-title>
+          <ion-buttons slot="start">
+            <ion-menu-button></ion-menu-button>
+          </ion-buttons>
+        </ion-toolbar>
+  
+      </ion-header>
 
-    <ion-content>
-      <div ref="mapCanvas" class="map-canvas"></div>
-    </ion-content>
-  </ion-page>
-</template>
+        <capacitor-google-map
+        ref="mapRef"
+      >
+      </capacitor-google-map>
 
-<style scoped>
-.map-canvas {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  transition: opacity 150ms ease-in;
-  background-color: transparent;
-  opacity: 0;
-}
-
-.show-map {
-  opacity: 1;
-}
-</style>
-
-
-<script lang="ts">
+    </ion-page>
+  </template>
+  
+  <script lang="ts" setup>
+ import { onMounted, nextTick, ref, onUnmounted } from "vue";
+import { GoogleMap } from "@capacitor/google-maps";
 import {
-  IonPage,
-  IonHeader,
-  IonMenuButton,
-  IonToolbar,
-  IonContent,
-  IonButtons,
-  IonTitle,
-} from "@ionic/vue";
-
-export default {
-  name: "Map",
-  components: {
     IonPage,
     IonHeader,
-    IonMenuButton,
     IonToolbar,
-    IonContent,
     IonButtons,
+    IonMenuButton,
+
+    IonContent,
+    IonList,
+    IonItem,
     IonTitle,
-  },
-  data() {
-    return {
-      isDark: false,
-      map: null,
-    };
-  },
-  async mounted() {
-    const appEl = document.querySelector("ion-app");
-    const darkStyle: never[] = [];
+    IonGrid,
+    IonRow,
+    IonCol,
+    IonLabel,
+    IonCard,
+    IonCardContent,
+    IonCardHeader,
+    IonAvatar,
+  loadingController,
+  } from '@ionic/vue';
+import { ticket } from "ionicons/icons";
+const props = defineProps<{
+  markerData: { coordinate: any; title: string; snippet: string }[];
+}>();
+const emits = defineEmits<{
+  (event: "onMarkerClicked", info: any): void;
+  (event: "onMapClicked"): void;
+}>();
 
-    try {
-      await this.loadGoogleMapsAPI("YOUR_API_KEY_HERE");
-    } catch (error) {
-      // Handle the Google Maps API error here (e.g., log it or display a message).
-      console.error("Error loading Google Maps API:", error);
+const mapRef = ref<HTMLElement>();
+const markerIds = ref<string[] | undefined>();
+let newMap: GoogleMap;
+
+
+onMounted(async () => {
+  console.log("mounted ", mapRef.value);
+  await nextTick();
+  await createMap();
+});
+
+onUnmounted(() => {
+  console.log("onunmounted");
+  newMap.removeMarkers(markerIds?.value as string[]);
+});
+
+
+const addSomeMarkers = async (newMap: GoogleMap) => {
+  markerIds?.value && newMap.removeMarkers(markerIds?.value as string[]);
+  console.log("🚀 ~ file: Maps.vue:81 ~ markers ~ props.markerData:", props.markerData)
+  const markers = [
+    {
+      coordinate:{
+        lat:14.546683247434416, 
+        lng:121.06432498060155
+      },
+      title:'localhostead'
     }
+  ]
+  // // Plot each point on the map
+  // let markers = props.markerData.map(({ coordinate, title, snippet }) => {
+  //   return {
+  //     coordinate, 
+  //     title,
+  //     snippet,
+  //   };
+  // });
 
-    let map: { setOptions: (arg0: { styles: any[] }) => void };
-
-    fetch("/data/locations.json")
-      .then((response) => response.json())
-      .then((locations) => {
-        const mapCenter = locations.find((location: { id: number }) => location.id === 1);
-
-        const mapData = locations.slice(1); // Exclude the first item (Map Center)
-
-        map = new google.maps.Map(this.$refs.mapCanvas, {
-          center: {
-            lat: mapCenter.lat,
-            lng: mapCenter.lng,
-          },
-          zoom: 16,
-          styles: this.isDark ? darkStyle : [],
-        });
-
-        mapData.forEach((markerData: { name: any; lat: any; lng: any }) => {
-          const infoWindow = new google.maps.InfoWindow({
-            content: `<h5>${markerData.name}</h5>`,
-          });
-
-          const marker = new google.maps.Marker({
-            position: {
-              lat: markerData.lat,
-              lng: markerData.lng,
-            },
-            map,
-            title: markerData.name,
-          });
-
-          marker.addListener("click", () => {
-            infoWindow.open(map, marker);
-          });
-        });
-
-        google.maps.event.addListenerOnce(map, "idle", () => {
-          this.$refs.mapCanvas.classList.add("show-map");
-        });
-
-        const observer = new MutationObserver((mutations) => {
-          mutations.forEach((mutation) => {
-            if (mutation.attributeName === "class") {
-              this.isDark = appEl.classList.contains("dark-theme");
-              if (map) {
-                map.setOptions({ styles: this.isDark ? darkStyle : [] });
-              }
-            }
-          });
-        });
-        observer.observe(appEl, {
-          attributes: true,
-        });
-      });
-  },
-  methods: {
-    async loadGoogleMapsAPI(apiKey: string) {
-      if (typeof google !== "undefined" && typeof google.maps !== "undefined") {
-        return; // API already loaded
-      }
-
-      return new Promise<void>((resolve, reject) => {
-        window.initMap = () => {
-          resolve();
-        };
-
-        const script = document.createElement("script");
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&v=3.54&callback=initMap`;
-        script.async = true;
-        script.defer = true;
-
-        script.onerror = () => {
-          reject(new Error("Failed to load Google Maps API"));
-        };
-
-        document.body.appendChild(script);
-      });
-    },
-  },
+  await newMap.addMarkers(markers);
 };
-</script>
+
+  const addCurrentLocationMarker = async (newMap: GoogleMap) => {
+        const position = await getCurrentPosition();
+        const marker = await newMap.addMarker({
+          coordinate: position,
+          title: 'Current Location',
+          snippet: 'You are here',
+        });
+        console.log("🚀 ~ file: Maps.vue:102 ~ addCurrentLocationMarker ~ position:", position)
+        markerIds.value = [...(markerIds.value || []), marker];
+      };
+
+    const getCurrentPosition = (): Promise<google.maps.LatLngLiteral> => {
+      return new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            resolve({
+              lat: position.coords.latitude,
+              lng: position.coords.longitude,
+            });
+          },
+          (error) => {
+            reject(error);
+          }
+        );
+      });
+    };
+
+async function createMap() {
+  if (!mapRef.value) return;
+
+  // render map using capacitor plugin
+  newMap = await GoogleMap.create({
+    id: "my-cool-map",
+    element: mapRef.value,
+    apiKey: 'GOOGLE_API_KEY',
+    config: {
+      center: {
+        lat: 14.546683247434416,
+        lng: 121.06432498060155,
+      },
+      zoom: 12,
+    },
+  });
+
+  addSomeMarkers(newMap);
+  addCurrentLocationMarker(newMap);
+
+
+  newMap.setOnMarkerClickListener((event) => {
+    emits("onMarkerClicked", event);
+  });
+
+  newMap.setOnMapClickListener(() => {
+    console.log("map clicked")
+    emits("onMapClicked");
+  });
+}
+  </script>
+
+  <style scoped>
+  capacitor-google-map {
+    display: inline-block;
+  width: 100%;
+  height: 100%;
+
+}
+ion-content::part(background) {
+    background-color: transparent;
+  }
+    body {
+  background: transparent;
+}
+    </style>
