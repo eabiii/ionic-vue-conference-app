@@ -118,7 +118,7 @@ import {
   calendar,
   people,
   map,
-  informationCircle
+  camera
 } from "ionicons/icons";
 import router from '@/router';
 import { Storage } from '@ionic/storage';
@@ -200,7 +200,7 @@ export default defineComponent({
       calendar,
       people,
       map,
-      informationCircle,
+      camera,
       appPages: [
         {
           title: 'Schedule',
@@ -219,9 +219,9 @@ export default defineComponent({
           icon: map
         },
         {
-          title: 'About',
-          url: '/tabs/about',
-          icon: informationCircle
+          title: 'Photo',
+          url: '/tabs/photo',
+          icon: camera
         }
       ]
     };

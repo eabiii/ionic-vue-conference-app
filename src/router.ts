@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from '@ionic/vue-router';
 import { RouteRecordRaw } from 'vue-router';
 import store from './store';
 
-const privateRoute: RouteRecordRaw['beforeEnter'] = function(to, from, next) {
+const privateRoute: RouteRecordRaw['beforeEnter'] = function (to, from, next) {
   if (!store.state.user.isAuthenticated) {
     next({ name: 'login' });
   } else {
@@ -78,9 +78,9 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import('@/views/Map.vue')
       },
       {
-        path: 'about',
-        name: 'about',
-        component: () => import('@/views/About.vue')
+        path: 'photo',
+        name: 'photo',
+        component: () => import('@/views/PhotoPage.vue')
       }
     ]
   },

@@ -19,9 +19,9 @@
           <ion-label>Map</ion-label>
         </ion-tab-button>
 
-        <ion-tab-button tab="about" href="/tabs/about">
-          <ion-icon :icon="informationCircle" />
-          <ion-label>About</ion-label>
+        <ion-tab-button tab="about" href="/tabs/photo">
+          <ion-icon :icon="camera" />
+          <ion-label>Photo</ion-label>
         </ion-tab-button>
       </ion-tab-bar>
     </ion-tabs>
@@ -42,7 +42,7 @@ import {
   calendar,
   people,
   location,
-  informationCircle
+  camera
 } from 'ionicons/icons';
 
 export default {
@@ -60,7 +60,7 @@ export default {
       calendar,
       people,
       location,
-      informationCircle,
+      camera,
     };
   },
 };

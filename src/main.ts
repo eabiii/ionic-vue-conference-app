@@ -2,6 +2,7 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router';
 import store from './store';
+import { defineCustomElements } from '@ionic/pwa-elements/loader';
 
 import { IonicVue } from '@ionic/vue';
 
@@ -32,10 +33,10 @@ import { register } from 'swiper/element/bundle';
 register();
 
 const app = createApp(App)
-.use(IonicVue)
-.use(router)
-.use(store);
-
+    .use(IonicVue)
+    .use(router)
+    .use(store);
+defineCustomElements(window);
 router.isReady().then(() => {
-app.mount('#app');
+    app.mount('#app');
 });
