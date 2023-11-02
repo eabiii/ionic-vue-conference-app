@@ -9,8 +9,8 @@
       </ion-toolbar>
     </ion-header>
 
-    <ion-content padding class="speaker-detail">
-      <div text-center v-if="speaker">
+    <ion-content class="ion-padding-top speaker-detail">
+      <div class="ion-text-center" v-if="speaker">
         <img :src="speaker.profilePic" :alt="speaker.name">
         <br>
         <ion-button fill="clear" size="small" color="twitter">
@@ -24,7 +24,7 @@
         </ion-button>
       </div>
 
-      <p>{{ speaker ? speaker.about : '' }}</p>
+      <p class="ion-text-center">{{ speaker ? speaker.about : '' }}</p>
     </ion-content>
   </ion-page>
 </template>
